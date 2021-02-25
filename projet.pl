@@ -1,6 +1,6 @@
 demarrer :- 
     nl,
-    write('Bienvenue dans Rush Hour ! '),
+    write('Bienvenue dans Quoridor ! '),
     afficheGrilleJeu. %appel jouer
 
 %création sur une grille de 4x4 pour tester. Sera fait sur 9x9 plus tard
