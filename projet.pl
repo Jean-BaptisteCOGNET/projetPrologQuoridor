@@ -1,4 +1,4 @@
-:- dynamic mur/3.
+:- dynamic mur/3, joueur1/1,score/1, compteur/1.
 :- retractall(mur(_,_)).
 
 demarrer :- 
@@ -28,33 +28,9 @@ jouer :-
          read(X). %récupération du niveau choisi par l'utilisateur
 
 
-%création sur une grille de 4x4 pour tester. Sera fait sur 9x9 plus tard
+%création sur une grille de 5x5 pour tester. Sera fait sur 9x9 plus tard
 
-case(11).   %déclaration de toutes les cases
-case(12).
-case(13).
-case(14).
-case(15).
-case(21).
-case(22).
-case(23).
-case(24).
-case(25).
-case(31).
-case(32).
-case(33).
-case(34).
-case(35).
-case(41).
-case(42).
-case(43).
-case(44).
-case(45).
-case(51).
-case(52).
-case(53).
-case(54).
-case(55).
+
 
 grilleJeu(
     [11,12,13,14,15,
@@ -66,28 +42,41 @@ grilleJeu(
 afficheGrilleJeu :- grilleJeu(G), printGrid(G). %affichage de la grille de jeu
 
 poseMur(Position,v) :- 
-    \+mur(Position,v,_),                                    %on vérifie qu'il n'y ait pas déjà un mur
-    \+coupeMur(Position, h),                                %on vérifie qu'on ne coupe pas un mur 
-    Position2 is Position +10, \+mur(Position2,v,_),        %on vérifie qu'il n'y ait pas de mur en dessous  
-    assert(mur(Position, v, debut)),
-    Position2 is Position +10,
-    assert(mur(Position2, v, fin)).
+  \+mur(Position,v,_),                                    %on vérifie qu'il n'y ait pas déjà un mur
+  \+coupeMur(Position, h),                                %on vérifie qu'on ne coupe pas un mur 
+  Position2 is Position +10, \+mur(Position2,v,_),        %on vérifie qu'il n'y ait pas de mur en dessous  
+  assert(mur(Position, v, debut)),
+  Position2 is Position +10,
+  assert(mur(Position2, v, fin)),
+  compteur(joueur1).
 
 poseMur(Position,h) :- 
-    \+mur(Position,h,_),                                    %on vérifie qu'il n'y ait pas déjà un mur
-    \+coupeMur(Position, v),                                %on vérifie qu'on ne coupe pas un mur    
-    Position2 is Position +1, \+mur(Position2,h,_),         %on vérifie qu'il n'y ait pas de mur à droite  
-    assert(mur(Position, h, debut)),
-    Position2 is Position +1,
-    assert(mur(Position2, h, fin)).
+  \+mur(Position,h,_),                                    %on vérifie qu'il n'y ait pas déjà un mur
+  \+coupeMur(Position, v),                                %on vérifie qu'on ne coupe pas un mur    
+  Position2 is Position +1, \+mur(Position2,h,_),         %on vérifie qu'il n'y ait pas de mur à droite  
+  assert(mur(Position, h, debut)),
+  Position2 is Position +1,
+  assert(mur(Position2, h, fin)).
 
 coupeMur(Position, Sens) :-                                 %on vérifie qu'on ne coupe pas un mur  
-    mur(Position, _, debut).
+  mur(Position, _, debut).
 
 
 
+joueur1(10).
+joueur2(10).
 
+compteur(joueur1) :-
+  joueur1(NbMurRestant),
+  NbMurRestant2 is NbMurRestant-1,
+  retractall(joueur1(NbMurRestant)),
+  assert(joueur1(NbMurRestant2)).
 
+compteur(joueur2) :-
+  joueur2(NbMurRestant),
+  NbMurRestant2 is NbMurRestant-1,
+  retractall(joueur2(NbMurRestant)),
+  assert(joueur2(NbMurRestant2)).
 
 
 
