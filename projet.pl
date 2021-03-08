@@ -1,13 +1,12 @@
 :- dynamic mur/3, 
 joueur/1,                     %determine la personne qui doit jouer
-compteurJ1/1, compteurJ2/1,   %Contient le NbMur restant par joueur
-score/1, compteur/1,  nbtour/1.
-
+compteurJ1/1, compteurJ2/1.   %Contient le NbMur restant par joueur
+%score/1, compteur/1,  nbtour/1.
 :- retractall(mur(_,_)).
 
 %initialisation des valeurs
-compteurJ1(10).
-compteurJ2(10).
+compteurJ1(1).
+compteurJ2(1).
 joueur(1).
 
 
@@ -40,35 +39,43 @@ jouer :-
   joueur(X),X=1,
   write('Joueur 1'), nl,
   write('Que voulez vous faire ? Tapez m. pour poser un mur ou d. pour vous deplacer'),nl,
-  tourJoueur(1),
+  read(Action),
   retractall(joueur(_)),
-  assert(joueur(2)).
+  assert(joueur(2)),
+  tourJoueur(1,Action).
 
 jouer :-
   joueur(X),X=2,
   write('Joueur 2'), nl,
   write('Que voulez vous faire ? Tapez m. pour poser un mur ou d. pour vous deplacer'),nl,
+  read(Action),
   retractall(joueur(_)),
   assert(joueur(1)),
-  tourJoueur(2).
+  tourJoueur(2,Action).
 
-tourJoueur(1) :- 
-  read(X),X==m,
+tourJoueur(1,m) :-                          %vérifie si il reste des murs à poser
+  compteurJ1(NbMurRestant), NbMurRestant==0,
+  write('plus de mur'),
+  deplacer.
+
+tourJoueur(1,m) :- 
   poserMur(1), 
   compteur(compteurJ1).
 
-tourJoueur(1) :- 
-  read(X),X==d, 
+tourJoueur(1,d) :- 
   deplacer.
 
-tourJoueur(2) :- 
-  read(X),X==m, 
+tourJoueur(2,m) :-                          %vérifie si il reste des murs à poser
+  compteurJ2(NbMurRestant), NbMurRestant==0,
+  write('plus de mur'),
+  deplacer.
+
+tourJoueur(2,m) :- 
   poserMur(1), 
   compteur(compteurJ2).
 
-tourJoueur(2) :- 
-  read(X),X==d,
-  deplacer.
+tourJoueur(2,d) :- 
+ deplacer.
 
 
 %création sur une grille de 5x5 pour tester. Sera fait sur 9x9 plus tard
@@ -130,22 +137,22 @@ coupeMur(Position, Sens) :-                               %on vérifie qu'on ne 
   mur(Position, _, debut).
 
 compteur(compteurJ1) :-                                      %compteur de mur restant pour le joueur 1
-  joueur1(NbMurRestant),
+  compteurJ1(NbMurRestant),
   NbMurRestant2 is NbMurRestant-1,
   retractall(compteurJ1(NbMurRestant)),
   assert(compteurJ1(NbMurRestant2)),
   write('Joueur 1, il vous reste '),
   write(NbMurRestant2),
-  write(' mur(s) a poser').
+  write(' mur(s)').
 
 compteur(compteurJ2) :-                                    %compteur de mur restant pour le joueur 2
-  joueur2(NbMurRestant),
+  compteurJ2(NbMurRestant),
   NbMurRestant2 is NbMurRestant-1,
   retractall(compteurJ2(NbMurRestant)),
   assert(compteurJ2(NbMurRestant2)),
   write('Joueur 2, il vous reste '),
   write(NbMurRestant2),
-  write(' mur(s) a poser').
+  write(' mur(s)').
 
 
 
