@@ -1,6 +1,8 @@
-:- dynamic mur/3, joueur1/1,score/1, compteur/1.
+:- dynamic mur/3, joueur1/1,score/1, compteur/1,joueur2/1, joueur/1, nbtour/1.
 :- retractall(mur(_,_)).
-
+joueur1(10).
+joueur2(10).
+joueur(1).
 demarrer :- 
     nl,
     write('Bienvenue dans Quoridor ! '), nl,
@@ -23,15 +25,44 @@ instructions :-
   afficheGrilleJeu, %appel de l'affichage de la grille de jeu
   nl,nl.
 
-jouer :- 
-         write("ecrire ici "),nl,
-         read(X). %récupération du niveau choisi par l'utilisateur
+jouer :-
+  joueur(X),X=1,
+  write('Joueur 1'), nl,
+  tour(1).
+
+jouer :-
+  joueur(X),X=2,
+  write('Joueur 2'), nl,
+  tour(2).
+
+tour(1) :- 
+  write('Que voulez vous faire ? m. pour poser un mur ou d. pour vous deplacer'),nl,
+  read(X),X==m,
+  retractall(joueur(_)),
+  assert(joueur(2)), poserMur, compteur(joueur1).
+
+tour(1) :- 
+  write('Que voulez vous faire ? m. pour poser un mur ou d. pour vous deplacer'),nl,
+  read(X),X==d,
+  retractall(joueur(_)),
+  assert(joueur(2)), deplacer.
+
+
+
+tour(2) :- 
+  write('Ecrire action que voulez-vous faire ?'),nl,
+  read(X),X==m,
+  retractall(joueur(_)),
+  assert(joueur(2)), poserMur, compteur(joueur2).
+
+tour(2) :- 
+  write('Ecrire action que voulez-vous faire ?'),nl,
+  read(X),X==d,
+  retractall(joueur(_)),
+  assert(joueur(1)), deplacer.
 
 
 %création sur une grille de 5x5 pour tester. Sera fait sur 9x9 plus tard
-
-
-
 grilleJeu(
     [11,12,13,14,15,
     21,22,23,24,25,
@@ -41,14 +72,21 @@ grilleJeu(
 
 afficheGrilleJeu :- grilleJeu(G), printGrid(G). %affichage de la grille de jeu
 
+poserMur():- 
+  write('position ?'),
+  read(P),
+  write('sens'),
+  read(S),
+  poseMur(P,S).
+
 poseMur(Position,v) :- 
   \+mur(Position,v,_),                                    %on vérifie qu'il n'y ait pas déjà un mur
   \+coupeMur(Position, h),                                %on vérifie qu'on ne coupe pas un mur 
   Position2 is Position +10, \+mur(Position2,v,_),        %on vérifie qu'il n'y ait pas de mur en dessous  
   assert(mur(Position, v, debut)),
   Position2 is Position +10,
-  assert(mur(Position2, v, fin)),
-  compteur(joueur1).
+  assert(mur(Position2, v, fin)).
+
 
 poseMur(Position,h) :- 
   \+mur(Position,h,_),                                    %on vérifie qu'il n'y ait pas déjà un mur
@@ -63,20 +101,21 @@ coupeMur(Position, Sens) :-                                 %on vérifie qu'on n
 
 
 
-joueur1(10).
-joueur2(10).
+
 
 compteur(joueur1) :-
   joueur1(NbMurRestant),
   NbMurRestant2 is NbMurRestant-1,
   retractall(joueur1(NbMurRestant)),
-  assert(joueur1(NbMurRestant2)).
+  assert(joueur1(NbMurRestant2)),
+  write(NbMurRestant2).
 
 compteur(joueur2) :-
   joueur2(NbMurRestant),
   NbMurRestant2 is NbMurRestant-1,
   retractall(joueur2(NbMurRestant)),
-  assert(joueur2(NbMurRestant2)).
+  assert(joueur2(NbMurRestant2)),
+  write(NbMurRestant2).
 
 
 
