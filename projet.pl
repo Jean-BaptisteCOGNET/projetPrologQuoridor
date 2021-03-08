@@ -43,7 +43,7 @@ jouer :-
 
 tour(1) :- 
   read(X),X==m,
-  poserMur, 
+  poserMur(1), 
   compteur(joueur1).
 
 tour(1) :- 
@@ -51,7 +51,8 @@ tour(1) :-
   deplacer.
 
 tour(2) :- 
-  read(X),X==m, poserMur, 
+  read(X),X==m, 
+  poserMur(1), 
   compteur(joueur2).
 
 tour(2) :- 
@@ -69,12 +70,28 @@ grilleJeu(
 
 afficheGrilleJeu :- grilleJeu(G), printGrid(G). %affichage de la grille de jeu
 
-poserMur():- 
+poserMur(1):- 
   write('position ?'),
   read(P),
   write('sens'),
   read(S),
   poseMur(P,S).
+
+poserMur(2):- 
+  write('Impossible de poser un mur ici. Recommencez !'),nl,
+  poserMur(1).
+
+poseMur(Position,Sens) :- 
+  mur(Position,Sens,_), 
+  poserMur(2).
+
+poseMur(Position,h) :- 
+  coupeMur(Position, v), 
+  poserMur(2).
+
+poseMur(Position,v) :- 
+  coupeMur(Position, h), 
+  poserMur(2).
 
 poseMur(Position,v) :- 
   \+mur(Position,v,_),                                    %on vérifie qu'il n'y ait pas déjà un mur
@@ -105,14 +122,18 @@ compteur(joueur1) :-
   NbMurRestant2 is NbMurRestant-1,
   retractall(joueur1(NbMurRestant)),
   assert(joueur1(NbMurRestant2)),
-  write(NbMurRestant2).
+  write('Joueur 1, il vous reste '),
+  write(NbMurRestant2),
+  write(' mur(s) a poser').
 
 compteur(joueur2) :-
   joueur2(NbMurRestant),
   NbMurRestant2 is NbMurRestant-1,
   retractall(joueur2(NbMurRestant)),
   assert(joueur2(NbMurRestant2)),
-  write(NbMurRestant2).
+  write('Joueur 2, il vous reste '),
+  write(NbMurRestant2),
+  write(' mur(s) a poser').
 
 
 
