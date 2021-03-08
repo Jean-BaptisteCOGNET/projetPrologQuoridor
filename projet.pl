@@ -1,13 +1,24 @@
-:- dynamic mur/3, joueur1/1,score/1, compteur/1,joueur2/1, joueur/1, nbtour/1.
+:- dynamic mur/3, 
+joueur/1,                     %determine la personne qui doit jouer
+compteurJ1/1, compteurJ2/1,   %Contient le NbMur restant par joueur
+score/1, compteur/1,  nbtour/1.
+
 :- retractall(mur(_,_)).
-joueur1(10).
-joueur2(10).
+
+%initialisation des valeurs
+compteurJ1(10).
+compteurJ2(10).
 joueur(1).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                           FONCTIONS PRINCIPALES                                 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 demarrer :- 
     nl,
     write('Bienvenue dans Quoridor ! '), nl,
-    instructions.
-    %jouer. %appel jouer
+    instructions,
+    jouer. %appel jouer
 
 instructions :-
   nl,
@@ -28,34 +39,34 @@ instructions :-
 jouer :-
   joueur(X),X=1,
   write('Joueur 1'), nl,
-  write('Que voulez vous faire ? m. pour poser un mur ou d. pour vous deplacer'),nl,
-  tour(1),
+  write('Que voulez vous faire ? Tapez m. pour poser un mur ou d. pour vous deplacer'),nl,
+  tourJoueur(1),
   retractall(joueur(_)),
   assert(joueur(2)).
 
 jouer :-
   joueur(X),X=2,
   write('Joueur 2'), nl,
-  write('Ecrire action que voulez-vous faire ?'),nl,
+  write('Que voulez vous faire ? Tapez m. pour poser un mur ou d. pour vous deplacer'),nl,
   retractall(joueur(_)),
   assert(joueur(1)),
-  tour(2).
+  tourJoueur(2).
 
-tour(1) :- 
+tourJoueur(1) :- 
   read(X),X==m,
   poserMur(1), 
-  compteur(joueur1).
+  compteur(compteurJ1).
 
-tour(1) :- 
+tourJoueur(1) :- 
   read(X),X==d, 
   deplacer.
 
-tour(2) :- 
+tourJoueur(2) :- 
   read(X),X==m, 
   poserMur(1), 
-  compteur(joueur2).
+  compteur(compteurJ2).
 
-tour(2) :- 
+tourJoueur(2) :- 
   read(X),X==d,
   deplacer.
 
@@ -70,22 +81,28 @@ grilleJeu(
 
 afficheGrilleJeu :- grilleJeu(G), printGrid(G). %affichage de la grille de jeu
 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                              GESTION DES MURS                                   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 poserMur(1):- 
   write('position ?'),
-  read(P),
-  write('sens'),
-  read(S),
-  poseMur(P,S).
+  read(Position),
+  write('sens ?'),
+  read(Sens),
+  poseMur(Position,Sens).
 
 poserMur(2):- 
   write('Impossible de poser un mur ici. Recommencez !'),nl,
   poserMur(1).
 
-poseMur(Position,Sens) :- 
+poseMur(Position,Sens) :-     %si il y a déjà un mur de placé ici
   mur(Position,Sens,_), 
   poserMur(2).
 
-poseMur(Position,h) :- 
+poseMur(Position,h) :-        %si on coupe un mur
   coupeMur(Position, v), 
   poserMur(2).
 
@@ -101,7 +118,6 @@ poseMur(Position,v) :-
   Position2 is Position +10,
   assert(mur(Position2, v, fin)).
 
-
 poseMur(Position,h) :- 
   \+mur(Position,h,_),                                    %on vérifie qu'il n'y ait pas déjà un mur
   \+coupeMur(Position, v),                                %on vérifie qu'on ne coupe pas un mur    
@@ -110,27 +126,23 @@ poseMur(Position,h) :-
   Position2 is Position +1,
   assert(mur(Position2, h, fin)).
 
-coupeMur(Position, Sens) :-                                 %on vérifie qu'on ne coupe pas un mur  
+coupeMur(Position, Sens) :-                               %on vérifie qu'on ne coupe pas un mur  
   mur(Position, _, debut).
 
-
-
-
-
-compteur(joueur1) :-
+compteur(compteurJ1) :-                                      %compteur de mur restant pour le joueur 1
   joueur1(NbMurRestant),
   NbMurRestant2 is NbMurRestant-1,
-  retractall(joueur1(NbMurRestant)),
-  assert(joueur1(NbMurRestant2)),
+  retractall(compteurJ1(NbMurRestant)),
+  assert(compteurJ1(NbMurRestant2)),
   write('Joueur 1, il vous reste '),
   write(NbMurRestant2),
   write(' mur(s) a poser').
 
-compteur(joueur2) :-
+compteur(compteurJ2) :-                                    %compteur de mur restant pour le joueur 2
   joueur2(NbMurRestant),
   NbMurRestant2 is NbMurRestant-1,
-  retractall(joueur2(NbMurRestant)),
-  assert(joueur2(NbMurRestant2)),
+  retractall(compteurJ2(NbMurRestant)),
+  assert(compteurJ2(NbMurRestant2)),
   write('Joueur 2, il vous reste '),
   write(NbMurRestant2),
   write(' mur(s) a poser').
