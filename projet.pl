@@ -28,38 +28,35 @@ instructions :-
 jouer :-
   joueur(X),X=1,
   write('Joueur 1'), nl,
-  tour(1).
+  write('Que voulez vous faire ? m. pour poser un mur ou d. pour vous deplacer'),nl,
+  tour(1),
+  retractall(joueur(_)),
+  assert(joueur(2)).
 
 jouer :-
   joueur(X),X=2,
   write('Joueur 2'), nl,
+  write('Ecrire action que voulez-vous faire ?'),nl,
+  retractall(joueur(_)),
+  assert(joueur(1)),
   tour(2).
 
 tour(1) :- 
-  write('Que voulez vous faire ? m. pour poser un mur ou d. pour vous deplacer'),nl,
   read(X),X==m,
-  retractall(joueur(_)),
-  assert(joueur(2)), poserMur, compteur(joueur1).
+  poserMur, 
+  compteur(joueur1).
 
 tour(1) :- 
-  write('Que voulez vous faire ? m. pour poser un mur ou d. pour vous deplacer'),nl,
-  read(X),X==d,
-  retractall(joueur(_)),
-  assert(joueur(2)), deplacer.
-
-
+  read(X),X==d, 
+  deplacer.
 
 tour(2) :- 
-  write('Ecrire action que voulez-vous faire ?'),nl,
-  read(X),X==m,
-  retractall(joueur(_)),
-  assert(joueur(2)), poserMur, compteur(joueur2).
+  read(X),X==m, poserMur, 
+  compteur(joueur2).
 
 tour(2) :- 
-  write('Ecrire action que voulez-vous faire ?'),nl,
   read(X),X==d,
-  retractall(joueur(_)),
-  assert(joueur(1)), deplacer.
+  deplacer.
 
 
 %création sur une grille de 5x5 pour tester. Sera fait sur 9x9 plus tard
