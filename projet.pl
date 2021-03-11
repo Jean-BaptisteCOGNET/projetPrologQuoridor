@@ -2,7 +2,7 @@
 joueur/1,                     %determine la personne qui doit jouer
 compteurJ1/1, compteurJ2/1.   %Contient le NbMur restant par joueur
 %score/1, compteur/1,  nbtour/1.
-:- retractall(mur(_,_)).
+:- retractall(mur(_,_,_)).
 
 %initialisation des valeurs
 compteurJ1(1).
@@ -117,17 +117,29 @@ poseMur(Position,v) :-
   coupeMur(Position, h), 
   poserMur(2).
 
+poseMur(Position,_) :- 
+  Position >= 90, 
+  poserMur(2).
+
+poseMur(Position,_) :- 
+  Position2 is Position +1, 
+  Position3 is Position2 mod 10, 
+  Position3 =:= 0,
+  poserMur(2).
+
 poseMur(Position,v) :- 
-  \+mur(Position,v,_),                                    %on vérifie qu'il n'y ait pas déjà un mur
-  \+coupeMur(Position, h),                                %on vérifie qu'on ne coupe pas un mur 
+  %\+Position >= 90,
+  %\+mur(Position,v,_),                                    %on vérifie qu'il n'y ait pas déjà un mur
+  %\+coupeMur(Position, h),                                %on vérifie qu'on ne coupe pas un mur 
   Position2 is Position +10, \+mur(Position2,v,_),        %on vérifie qu'il n'y ait pas de mur en dessous  
   assert(mur(Position, v, debut)),
   Position2 is Position +10,
   assert(mur(Position2, v, fin)).
 
 poseMur(Position,h) :- 
-  \+mur(Position,h,_),                                    %on vérifie qu'il n'y ait pas déjà un mur
-  \+coupeMur(Position, v),                                %on vérifie qu'on ne coupe pas un mur    
+  %\+Position >= 90,
+  %\+mur(Position,h,_),                                    %on vérifie qu'il n'y ait pas déjà un mur
+  %\+coupeMur(Position, v),                                %on vérifie qu'on ne coupe pas un mur    
   Position2 is Position +1, \+mur(Position2,h,_),         %on vérifie qu'il n'y ait pas de mur à droite  
   assert(mur(Position, h, debut)),
   Position2 is Position +1,
@@ -138,8 +150,8 @@ coupeMur(Position, Sens) :-                               %on vérifie qu'on ne 
 
 compteur(compteurJ1) :-                                      %compteur de mur restant pour le joueur 1
   compteurJ1(NbMurRestant),
-  NbMurRestant2 is NbMurRestant-1,
   retractall(compteurJ1(NbMurRestant)),
+  NbMurRestant2 is NbMurRestant-1,
   assert(compteurJ1(NbMurRestant2)),
   write('Joueur 1, il vous reste '),
   write(NbMurRestant2),
@@ -147,8 +159,8 @@ compteur(compteurJ1) :-                                      %compteur de mur re
 
 compteur(compteurJ2) :-                                    %compteur de mur restant pour le joueur 2
   compteurJ2(NbMurRestant),
-  NbMurRestant2 is NbMurRestant-1,
   retractall(compteurJ2(NbMurRestant)),
+  NbMurRestant2 is NbMurRestant-1,
   assert(compteurJ2(NbMurRestant2)),
   write('Joueur 2, il vous reste '),
   write(NbMurRestant2),
