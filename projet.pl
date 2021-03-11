@@ -1,6 +1,7 @@
 :- dynamic mur/3, 
 joueur/1,                     %determine la personne qui doit jouer
-compteurJ1/1, compteurJ2/1.   %Contient le NbMur restant par joueur
+compteurJ1/1, compteurJ2/1,   %Contient le NbMur restant par joueur
+positionJoueur/2.
 %score/1, compteur/1,  nbtour/1.
 :- retractall(mur(_,_,_)).
 
@@ -8,6 +9,8 @@ compteurJ1/1, compteurJ2/1.   %Contient le NbMur restant par joueur
 compteurJ1(1).
 compteurJ2(1).
 joueur(1).
+positionJoueur(1,85).
+positionJoueur(2,95).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -34,6 +37,12 @@ instructions :-
   write('La grille de jeu quant a elle est constituee des cases suivantes : '), nl,
   afficheGrilleJeu, %appel de l'affichage de la grille de jeu
   nl,nl.
+
+jouer :-
+  gagne(1).
+
+jouer :-
+  gagne(2).
 
 jouer :-
   joueur(X),X=1,
@@ -63,7 +72,7 @@ tourJoueur(1,m) :-
   compteur(compteurJ1).
 
 tourJoueur(1,d) :- 
-  deplacer.
+  deplacer(1,1).
 
 tourJoueur(2,m) :-                          %vérifie si il reste des murs à poser
   compteurJ2(NbMurRestant), NbMurRestant==0,
@@ -75,8 +84,17 @@ tourJoueur(2,m) :-
   compteur(compteurJ2).
 
 tourJoueur(2,d) :- 
- deplacer.
+ deplacer(2, 1).
 
+gagne(1):-
+  positionJoueur(1, Position),
+  Position =:= 95, 
+  write('Le joueur 1 gagne').
+
+gagne(2):-
+  positionJoueur(2, Position),
+  Position =:= 15, 
+  write('Le joueur 2 gagne').
 
 %création sur une grille de 5x5 pour tester. Sera fait sur 9x9 plus tard
 grilleJeu(
@@ -88,7 +106,87 @@ grilleJeu(
 
 afficheGrilleJeu :- grilleJeu(G), printGrid(G). %affichage de la grille de jeu
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                            GESTION DES DEPLACEMENTS                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+deplacer(Joueur, 1) :- 
+  write('Direction ? (g. pour gauche, d. pour droite, h. pour haut, b. pour bas)'),nl,
+  read(Direction),
+  deplace(Joueur, Direction).
 
+deplacer(Joueur, 2) :- 
+  write('Deplacement impossible, recommencez !'),nl,
+  deplacer(Joueur, 1).
+
+deplace(Joueur,g) :-
+  positionJoueur(Joueur, Position),
+  Position2 is Position -1,
+  Position3 is Position2 mod 10, 
+  Position3 =:= 0,
+  deplacer(Joueur, 2).
+
+deplace(Joueur,g) :-
+  positionJoueur(Joueur, Position),
+  Position2 is Position -1,
+  mur(Position2, v, _),
+  deplacer(Joueur, 2).
+
+deplace(Joueur,g) :-
+  positionJoueur(Joueur, Position),
+  Position2 is Position - 1,
+  retractall(positionJoueur(Joueur,_)),
+  assert(positionJoueur(Joueur, Position2)).
+
+deplace(Joueur,d) :-
+  positionJoueur(Joueur, Position),
+  Position2 is Position +1,
+  Position3 is Position2 mod 10, 
+  Position3 =:= 0,
+  deplacer(Joueur, 2).
+
+deplace(Joueur,d) :-
+  positionJoueur(Joueur, Position),
+  mur(Position, v, _),
+  deplacer(Joueur, 2).
+
+deplace(Joueur,d) :-
+  positionJoueur(Joueur, Position),
+  Position2 is Position + 1,
+  retractall(positionJoueur(Joueur,_)),
+  assert(positionJoueur(Joueur, Position2)).
+
+deplace(Joueur,h) :-
+  positionJoueur(Joueur, Position),
+  Position =< 20,
+  deplacer(Joueur, 2).
+
+deplace(Joueur,h) :-
+  positionJoueur(Joueur, Position),
+  Position2 is Position -10,
+  mur(Position2, h, _),
+  deplacer(Joueur, 2).
+
+deplace(Joueur,h) :-
+  positionJoueur(Joueur, Position),
+  Position2 is Position - 10,
+  retractall(positionJoueur(Joueur,_)),
+  assert(positionJoueur(Joueur, Position2)).
+
+deplace(Joueur,b) :-
+  positionJoueur(Joueur, Position),
+  Position >= 90,
+  deplacer(Joueur, 2).
+
+deplace(Joueur,b) :-
+  positionJoueur(Joueur, Position),
+  mur(Position, h, _),
+  deplacer(Joueur, 2).
+  
+deplace(Joueur,b) :-
+  positionJoueur(Joueur, Position),
+  Position2 is Position + 10,
+  retractall(positionJoueur(Joueur,_)),
+  assert(positionJoueur(Joueur, Position2)).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
