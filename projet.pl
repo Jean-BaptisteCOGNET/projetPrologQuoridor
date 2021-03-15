@@ -40,7 +40,7 @@ initialisation:-
   assert(compteurJoueur(1,1)),
   assert(compteurJoueur(2,1)),
   assert(joueur(1)),
-  assert(positionJoueur(1,85)),
+  assert(positionJoueur(1,15)),
   assert(positionJoueur(2,95)),
   assert(compteurCase(11)),
   assert(compteurMur(11)).
@@ -53,7 +53,7 @@ jouer :-          %vérifie si le J1 à gagné
 
 jouer :-
   joueur(X),X=1,
-  write('Joueur 1'), nl,
+  write('Joueur 1 : X'), nl,
   write('Que voulez vous faire ? Tapez m. pour poser un mur ou d. pour vous deplacer'),nl,
   read(Action),
   retractall(joueur(_)),
@@ -63,7 +63,7 @@ jouer :-
 
 jouer :-
   joueur(X),X=2,
-  write('Joueur 2'), nl,
+  write('Joueur 2 : O'), nl,
   write('Que voulez vous faire ? Tapez m. pour poser un mur ou d. pour vous deplacer'),nl,
   read(Action),
   retractall(joueur(_)),
@@ -302,7 +302,7 @@ afficheCase :-
 afficheCase :-
   compteurCase(X),
   positionJoueur(1, X),
-  write("J1"),
+  write("X "),
   afficheMurV,
   X2 is X +1,
   retractall(compteurCase(_)),
@@ -312,7 +312,7 @@ afficheCase :-
 afficheCase :-
   compteurCase(X),
   positionJoueur(2, X),
-  write("J2"),
+  write("O "),
   afficheMurV,
   X2 is X +1,
   retractall(compteurCase(_)),
