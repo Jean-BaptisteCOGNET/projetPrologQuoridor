@@ -45,8 +45,8 @@ initialisation:-
   assert(compteurJoueur(1,10)),
   assert(compteurJoueur(2,10)),
   assert(joueur(1)),
-  assert(positionJoueur(1,85)),
-  assert(positionJoueur(2,45)),
+  assert(positionJoueur(1,15)),
+  assert(positionJoueur(2,95)),
   assert(compteurCase(11)),
   assert(compteurMur(11)),
   creerArc(11).
