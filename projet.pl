@@ -15,7 +15,7 @@ demarrer :-
     write('Bienvenue dans Quoridor ! '), nl,
     initialisation,
     instructions,
-    jouer. %appel jouer
+    jouer.                    %appel jouer
 
 instructions :-
   nl,
@@ -31,10 +31,10 @@ instructions :-
   write('instructions.            -- revoir ce message.'), nl,
   write('halt.                    -- fermer prolog.'), nl,nl,
   write('La grille de jeu quant a elle est constituee des cases suivantes : '), nl,
-  nl, afficheGrille,    %appel de l'affichage de la grille de jeu
+  nl, afficheGrille,          %appel de l'affichage de la grille de jeu
   nl,nl.
 
-initialisation:-      %Initialise les paramètre du jeu
+initialisation:-              %Initialise les paramètre du jeu
   retractall(mur(_,_,_)),
   retractall(compteurJoueur(_,_)),
   retractall(joueur(_)),
@@ -54,34 +54,34 @@ initialisation:-      %Initialise les paramètre du jeu
   creerArc(11).
 
 %Crée l'ensemble des voisins de chaque case
-creerArc(X):-             %Ajoute des arcs avec les voisins du dessous
+creerArc(X):-                 %Ajoute des arcs avec les voisins du dessous
   X < 90,  
   X3 is X +10,
-  assert(arc(X, X3,1)),   %crée un liaison orientéentre une case et son voisin du bas
-  assert(arc(X3, X,1)),   %crée un liaison orientéentre un voisin du bas et une case
+  assert(arc(X, X3,1)),       %crée un liaison orientéentre une case et son voisin du bas
+  assert(arc(X3, X,1)),       %crée un liaison orientéentre un voisin du bas et une case
   XA is X+1,
   X2 is XA mod 10,
   X2 =:= 0,
   X4 is X3 - 8,
   creerArc(X4).
 
-creerArc(X):-             %Si ce n'est pas la denière colonne, ajoute en plus des voisins à droite
+creerArc(X):-                 %Si ce n'est pas la denière colonne, ajoute en plus des voisins à droite
   X < 99,
   X3 is X +1,
-  assert(arc(X, X3,1)),   %crée un liaison orienté entre une case et son vosin de droite
-  assert(arc(X3, X,1)),   %crée un liaison entre un voisin de droite et une case
+  assert(arc(X, X3,1)),       %crée un liaison orienté entre une case et son vosin de droite
+  assert(arc(X3, X,1)),       %crée un liaison entre un voisin de droite et une case
   creerArc(X3).
 
-creerArc(X):-         %cas des voisins de la dernière colone de la dernière ligne (pas de voisin à droite et en bas)
+creerArc(X):-                 %cas des voisins de la dernière colone de la dernière ligne (pas de voisin à droite et en bas)
   XA is X+1,
   X2 is XA mod 10,
   X2 =:= 0.
 
 
-jouer :-          %vérifie si le J1 à gagné
+jouer :-                      %vérifie si le J1 à gagné
   gagne(1).
 
-jouer :-          %vérifie si le J2 à gagné
+jouer :-                      %vérifie si le J2 à gagné
   gagne(2).
 
 jouer :-
@@ -104,26 +104,26 @@ jouer :-
   tourJoueur(2,Action), nl, nl,
   afficheGrille.
 
-tourJoueur(Joueur,m) :-                          %vérifie si il reste des murs à poser au joueur
+tourJoueur(Joueur,m) :-       %vérifie si il reste des murs à poser au joueur
   compteurJoueur(Joueur,NbMurRestant),
   NbMurRestant < 1,  
   write('Plus de mur,vous ne pouvez que vous deplacer'), nl,
   deplacer(Joueur,1).
 
-tourJoueur(Joueur,m) :-                          %le Joueur pose un mur
+tourJoueur(Joueur,m) :-       %le Joueur pose un mur
   poserMur(1), 
   compteur(Joueur,compteurJoueur).
 
-tourJoueur(Joueur,d) :-                          %le Joueur se deplace
+tourJoueur(Joueur,d) :-       %le Joueur se deplace
   deplacer(Joueur,1).
 
 
-gagne(1):-          %vérifie si le J1 à gagné
+gagne(1):-                    %vérifie si le J1 à gagné
   positionJoueur(1, Position),
   Position > 90, 
   ansi_format([bold,fg(green)], 'Le joueur 1 gagne !', []).
 
-gagne(2):-          %vérifie si le J2 à gagné
+gagne(2):-                    %vérifie si le J2 à gagné
   positionJoueur(2, Position),
   Position < 20, 
    ansi_format([bold,fg(cyan)], 'Le joueur 2 gagne !', []).
@@ -321,33 +321,32 @@ poseMur(Position,_) :-        %si le mur dépasse à droite
   Position >= 90, 
   poserMur(2).
 
-poseMur(Position,_) :-        %si le mur dépasse à droite
+poseMur(Position,_) :-        %si le mur dépasse à gauche
   Position =< 10, 
   poserMur(2).
 
-poseMur(Position,_) :- 
+poseMur(Position,_) :-        %si le mur est sur la dernière colonne
   Position2 is Position +1, 
   Position3 is Position2 mod 10, 
   Position3 =:= 0,
   poserMur(2).
 
-
-poseMur(Position,v) :- 
+poseMur(Position,v) :-        %pose le mur vertical si c'est possible
   Position2 is Position +10, \+mur(Position2,v,_),          
-  assert(mur(Position, v, debut)),
-  assert(mur(Position2, v, fin)),
+  assert(mur(Position, v, debut)),          %crée le debut du mur
+  assert(mur(Position2, v, fin)),           %crée la fin du mur
   Position3 is Position +1,
-  retractall(arc(Position,Position3,_)),
-  retractall(arc(Position3,Position,_)),
+  retractall(arc(Position,Position3,_)),    %supprime la liasion entre les case séparé par le mur
+  retractall(arc(Position3,Position,_)),    %supprime la liasion entre les case séparé par le mur
   Position4 is Position2 +1,
-  retractall(arc(Position2, Position4,_)),
-  retractall(arc(Position4, Position2,_)),
+  retractall(arc(Position2, Position4,_)),  %supprime la liasion entre les case séparé par le mur
+  retractall(arc(Position4, Position2,_)),  %supprime la liasion entre les case séparé par le mur
   positionJoueur(1, PositionJ1),
   positionJoueur(2, PositionJ2),
   poseMurPossibleJ1(PositionJ1),
   poseMurPossibleJ2(PositionJ2).
 
-poseMur(Position,v) :-
+poseMur(Position,v) :-        %supprime le mur créé si il bloque le jeu et remets les liaisons entre les cases
   Position2 is Position +10,          
   retractall(mur(Position, v, _)),
   retractall(mur(Position2, v, _)),
@@ -359,22 +358,22 @@ poseMur(Position,v) :-
   assert(arc(Position4, Position2,1)),
   poserMur(2).
 
-poseMur(Position,h) :- 
+poseMur(Position,h) :-        %pose le mur horitzontal si c'est possible 
   Position2 is Position +1, \+mur(Position2,h,_),           
-  assert(mur(Position, h, debut)),
-  assert(mur(Position2, h, fin)),
+  assert(mur(Position, h, debut)),          %crée le debut du mur
+  assert(mur(Position2, h, fin)),           %crée la fin du mur
   Position3 is Position +10,
-  retractall(arc(Position,Position3,_)),
-  retractall(arc(Position3,Position,_)),
+  retractall(arc(Position,Position3,_)),    %supprime la liasion entre les case séparé par le mur
+  retractall(arc(Position3,Position,_)),    %supprime la liasion entre les case séparé par le mur
   Position4 is Position2 +10,
-  retractall(arc(Position2, Position4,_)),
-  retractall(arc(Position4, Position2,_)),
+  retractall(arc(Position2, Position4,_)),  %supprime la liasion entre les case séparé par le mur
+  retractall(arc(Position4, Position2,_)),  %supprime la liasion entre les case séparé par le mur
   positionJoueur(1, PositionJ1),
   positionJoueur(2, PositionJ2),
   poseMurPossibleJ1(PositionJ1),
   poseMurPossibleJ2(PositionJ2).
 
-poseMur(Position,h) :- 
+poseMur(Position,h) :-        %supprime le mur créé si il bloque le jeu et remets les liaisons entre les cases
   Position2 is Position +1,           
   retractall(mur(Position, h, _)),
   retractall(mur(Position2, h, _)),
@@ -386,9 +385,11 @@ poseMur(Position,h) :-
   assert(arc(Position4, Position2,1)), 
   poserMur(2).
 
-coupeMur(Position) :-                                          %on vérifie qu'on ne coupe pas un mur  
+coupeMur(Position) :-         %on vérifie qu'on ne coupe pas un mur  
   mur(Position, _, debut).
 
+
+%test si il existe toujours un chemin entre le J1 et l'arrivée
 poseMurPossibleJ1(PositionJ1):- 
   dijkstra(PositionJ1,91, _, _).
 
@@ -416,6 +417,7 @@ poseMurPossibleJ1(PositionJ1):-
 poseMurPossibleJ1(PositionJ1):- 
   dijkstra(PositionJ1,99, _, _).
 
+%test si il existe toujours un chemin entre le J2 et l'arrivée
 poseMurPossibleJ2(PositionJ2):- 
   dijkstra(PositionJ2,11, _, _).
 
@@ -444,14 +446,14 @@ poseMurPossibleJ2(PositionJ2):-
   dijkstra(PositionJ2,19, _, _).
 
 
-compteur(1, compteurJoueur) :-                                      %compteur de mur restant pour le joueur 1
+compteur(1, compteurJoueur) :-              %compteur de mur restant pour le joueur 1
   compteurJoueur(1,NbMurRestant),
   retractall(compteurJoueur(1,_)),
   NbMurRestant2 is NbMurRestant-1,
   assert(compteurJoueur(1,NbMurRestant2)),
   ansi_format([bold,fg(green)], 'Le joueur 1, il vous reste ~w mur(s)', [NbMurRestant2]).
 
-compteur(2, compteurJoueur) :-                                      %compteur de mur restant pour le joueur 1
+compteur(2, compteurJoueur) :-              %compteur de mur restant pour le joueur 1
   compteurJoueur(2,NbMurRestant),
   retractall(compteurJoueur(2,_)),
   NbMurRestant2 is NbMurRestant-1,
@@ -463,7 +465,7 @@ compteur(2, compteurJoueur) :-                                      %compteur de
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                           GESTION DE L'AFFICHAGE                                %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-afficheGrille :-
+afficheGrille :-              %Si compteurCase >=99 (a terminé d'afficher la grille)
   compteurCase(X),
   X>=99,
   retractall(compteurCase(_)),
@@ -471,8 +473,7 @@ afficheGrille :-
   retractall(compteurMur(_)),
   assert(compteurMur(11)).
 
-afficheGrille :-
-  %compteurCase(X), X2 is X+1, X3 is X2 mod 10, X3=/=0,
+afficheGrille :-              %affiche la grille tant que le compteurCase < 99
   afficheCase.
 
 afficheCase :-
