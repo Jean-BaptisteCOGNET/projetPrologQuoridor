@@ -1,29 +1,29 @@
 :- dynamic mur/3, 
-joueur/1,                     %determine la personne qui doit jouer
-compteurJ1/1, compteurJ2/1,   %Contient le NbMur restant par joueur
-compteurJoueur/2,
-positionJoueur/2,
-arc/3,
-compteurCase/1, compteurMur/1.
+joueur/1,                     %Determine la personne qui doit jouer   
+compteurJoueur/2,             %Contient le NbMur restant par joueur
+positionJoueur/2,             %Contient la position de chaque joueur
+arc/3,                        %Contient les case voisines d'une case
+compteurCase/1,               %Permet d'afficher les cases dans la console
+compteurMur/1.                %Permet d'afficher les murs dans la console
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                           FONCTIONS PRINCIPALES                                 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-demarrer :- 
-    initialisation, 
+demarrer :-  
     nl,
     write('Bienvenue dans Quoridor ! '), nl,
+    initialisation,
     instructions,
     jouer. %appel jouer
 
 instructions :-
   nl,
-  write('Le jeu Quoridor est un jeu de strategie combinatoire, qui se joue sur un plateau de 81 cases carrees (9x9) et qui se joue ici a 2 joueurs.'), nl, 
-  write('Les joueurs sont representes par un pion J1 et un pion J2 sur le plateau et commencent chacun au centre de leur ligne de fond, en haut au milieu pour le joueur J1 (case 15) et en bas au milieu pour le joueur J2 (case 95).'), nl,
-  write('Chaque case du plateau est representee par un numero et constitue une position potentielle ou les pions des joueurs peuvent se trouver.'),nl,
+  write('Le jeu Quoridor est un jeu de strategie combinatoire, qui se joue sur un plateau de 81 cases carrees (9x9) et qui se joue ici a 2 joueurs.'), nl, nl,
+  write('Les joueurs sont representes par un pion J1 et un pion J2 sur le plateau et commencent chacun au centre de leur ligne de fond, en haut au milieu pour le joueur J1 (case 15) et en bas au milieu pour le joueur J2 (case 95).'), nl, nl,
+  write('Chaque case du plateau est representee par un numero et constitue une position potentielle ou les pions des joueurs peuvent se trouver.'),nl, nl,
   write('Chaque joueur dispose de 10 murs chacun, pour entraver la progression du joueur adverse. Un mur peut etre place entre deux ensembles de deux cases. Chaque joueur a son tour choisit de deplacer son pion ou de poser un mur. Lorsqu il n a plus de murs, le joueur doit deplacer son pion.'),
-  nl,nl,
+  nl,nl, nl,
   write('Pour pouvoir jouer, entrez les differentes commandes suivantes en respectant la syntax Prolog (pas de majuscule et avec un point a la fin de la commande).'), nl,
   write('Les differentes commandes du jeu sont :'), nl,
   write('demarrer.                -- pour lancer le jeu.'), nl,
@@ -31,10 +31,10 @@ instructions :-
   write('instructions.            -- revoir ce message.'), nl,
   write('halt.                    -- fermer prolog.'), nl,nl,
   write('La grille de jeu quant a elle est constituee des cases suivantes : '), nl,
-  nl, afficheGrille, %appel de l'affichage de la grille de jeu
+  nl, afficheGrille,    %appel de l'affichage de la grille de jeu
   nl,nl.
 
-initialisation:- 
+initialisation:-      %Initialise les paramètre du jeu
   retractall(mur(_,_,_)),
   retractall(compteurJoueur(_,_)),
   retractall(joueur(_)),
@@ -42,8 +42,10 @@ initialisation:-
   retractall(compteurCase(_)),
   retractall(compteurMur(_)),
   retractall(arc(_,_,_,_)),
-  assert(compteurJoueur(1,10)),
-  assert(compteurJoueur(2,10)),
+  write('Combien de murs voulez-vous avoir au debut de la partie (10 est le nombre standard) ?'),nl,
+  read(NbMur),
+  assert(compteurJoueur(1,NbMur)),
+  assert(compteurJoueur(2,NbMur)),
   assert(joueur(1)),
   assert(positionJoueur(1,15)),
   assert(positionJoueur(2,95)),
@@ -51,49 +53,35 @@ initialisation:-
   assert(compteurMur(11)),
   creerArc(11).
 
-creerArc(99).
-
-creerArc(X):-
-  X < 90,
+%Crée l'ensemble des voisins de chaque case
+creerArc(X):-             %Ajoute des arcs avec les voisins du dessous
+  X < 90,  
+  X3 is X +10,
+  assert(arc(X, X3,1)),   %crée un liaison orientéentre une case et son voisin du bas
+  assert(arc(X3, X,1)),   %crée un liaison orientéentre un voisin du bas et une case
   XA is X+1,
   X2 is XA mod 10,
   X2 =:= 0,
-  X3 is X +10,
-  assert(arc(X, X3,1)),
-  assert(arc(X3, X,1)),
   X4 is X3 - 8,
   creerArc(X4).
 
-
-creerArc(X):-
-  X < 90,
+creerArc(X):-             %Si ce n'est pas la denière colonne, ajoute en plus des voisins à droite
+  X < 99,
   X3 is X +1,
-  assert(arc(X, X3,1)),
-  assert(arc(X3, X,1)),
-  X4 is X +10,
-  assert(arc(X, X4,1)),
-  assert(arc(X4, X,1)),
+  assert(arc(X, X3,1)),   %crée un liaison orienté entre une case et son vosin de droite
+  assert(arc(X3, X,1)),   %crée un liaison entre un voisin de droite et une case
   creerArc(X3).
 
-creerArc(X):-
+creerArc(X):-         %cas des voisins de la dernière colone de la dernière ligne (pas de voisin à droite et en bas)
   XA is X+1,
   X2 is XA mod 10,
   X2 =:= 0.
 
-creerArc(X):-
-  X < 100,
-  X3 is X +1,
-  assert(arc(X, X3,1)),
-  assert(arc(X3, X,1)),
-  creerArc(X3).
-
-
-
-
-jouer :-
-  gagne(1).
 
 jouer :-          %vérifie si le J1 à gagné
+  gagne(1).
+
+jouer :-          %vérifie si le J2 à gagné
   gagne(2).
 
 jouer :-
@@ -116,32 +104,19 @@ jouer :-
   tourJoueur(2,Action), nl, nl,
   afficheGrille.
 
-tourJoueur(1,m) :-                          %vérifie si il reste des murs à poser au J1
-  compteurJoueur(1,NbMurRestant),
-  NbMurRestant < 1,
-  
-  write('plus de mur,vous ne pouvez que vous deplacer'), nl,
-  deplacer(1,1).
+tourJoueur(Joueur,m) :-                          %vérifie si il reste des murs à poser au joueur
+  compteurJoueur(Joueur,NbMurRestant),
+  NbMurRestant < 1,  
+  write('Plus de mur,vous ne pouvez que vous deplacer'), nl,
+  deplacer(Joueur,1).
 
-tourJoueur(1,m) :- 
+tourJoueur(Joueur,m) :-                          %le Joueur pose un mur
   poserMur(1), 
-  compteur(1,compteurJoueur).
+  compteur(Joueur,compteurJoueur).
 
-tourJoueur(1,d) :- 
-  deplacer(1,1).
+tourJoueur(Joueur,d) :-                          %le Joueur se deplace
+  deplacer(Joueur,1).
 
-tourJoueur(2,m) :-                          %vérifie si il reste des murs à poser au J2
-  compteurJoueur(2,NbMurRestant),
-  NbMurRestant < 1,
-  write('plus de mur, vous ne pouvez que vous deplacer'), nl,
-  deplacer(2,1).
-
-tourJoueur(2,m) :- 
-  poserMur(1), 
-  compteur(2, compteurJoueur).
-
-tourJoueur(2,d) :- 
- deplacer(2, 1).
 
 gagne(1):-          %vérifie si le J1 à gagné
   positionJoueur(1, Position),
@@ -154,44 +129,42 @@ gagne(2):-          %vérifie si le J2 à gagné
    ansi_format([bold,fg(cyan)], 'Le joueur 2 gagne !', []).
 
 
-afficheGrilleJeu :- grilleJeu(G), printGrid(G). %affichage de la grille de jeu
-
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                            GESTION DES DEPLACEMENTS                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-deplacer(Joueur, 1) :- 
+deplacer(Joueur, 1) :-        %demande au joueur le sens de déplacement
   write('Direction ? (g. pour gauche, d. pour droite, h. pour haut, b. pour bas)'),nl,
   read(Direction),
   deplace(Joueur, Direction).
 
-deplacer(Joueur, 2) :- 
+deplacer(Joueur, 2) :-        %indique que le déplacement n'est pas possible car il est arrivé sur l'autre joueur
   positionJoueur(1, PositionJ1),
   positionJoueur(2, PositionJ2),
   PositionJ1 == PositionJ2,
   write('Vous etes sur l autre joueur !'),nl,
   deplacer(Joueur, 1).
 
-deplacer(Joueur, 2) :- 
+deplacer(Joueur, 2) :-        %indique que le déplacement n'est pas possible car il y a un mur ou il sort de la grille
   write('Deplacement impossible, recommencez !'),nl,
   deplacer(Joueur, 1).
 
-deplace(Joueur,g) :-
+deplace(Joueur,g) :-          %vérifie si le joueur est sur la gauche de la grille 
   positionJoueur(Joueur, Position),
   Position2 is Position -1,
   Position3 is Position2 mod 10, 
   Position3 =:= 0,
   deplacer(Joueur, 2).
 
-deplace(Joueur,g) :-
+deplace(Joueur,g) :-          %vérifie si il y a un mur à gauche
   positionJoueur(Joueur, Position),
   Position2 is Position -1,
   mur(Position2, v, _),
   deplacer(Joueur, 2).
 
-deplace(1,g) :-
+deplace(1,g) :-               %saute par dessus le J2 si il est sur la gauche
   positionJoueur(1, PositionJ1),
   positionJoueur(2, PositionJ2),  
   Position2 is PositionJ1 - 1,
@@ -200,7 +173,7 @@ deplace(1,g) :-
   assert(positionJoueur(1, Position2)),
   deplace(1,g).
 
-deplace(2,g) :-
+deplace(2,g) :-               %saute par dessus le J1 si il est sur la gauche
   positionJoueur(1, PositionJ1),
   positionJoueur(2, PositionJ2),  
   Position2 is PositionJ2 - 1,
@@ -209,25 +182,25 @@ deplace(2,g) :-
   assert(positionJoueur(2, Position2)),
   deplace(2,g).
 
-deplace(Joueur,g) :-
+deplace(Joueur,g) :-          %déplace le joueur à gauche dans le cas idéal
   positionJoueur(Joueur, Position),
   Position2 is Position - 1,
   retractall(positionJoueur(Joueur,_)),
   assert(positionJoueur(Joueur, Position2)).
 
-deplace(Joueur,d) :-
+deplace(Joueur,d) :-          %vérifie si le joueur est sur la droite de la grille
   positionJoueur(Joueur, Position),
   Position2 is Position +1,
   Position3 is Position2 mod 10, 
   Position3 =:= 0,
   deplacer(Joueur, 2).
 
-deplace(Joueur,d) :-
+deplace(Joueur,d) :-          %vérifie si il y a un mur à droite
   positionJoueur(Joueur, Position),
   mur(Position, v, _),
   deplacer(Joueur, 2).
 
-deplace(1,d) :-
+deplace(1,d) :-               %saute par dessus le J2 si il est sur la droite
   positionJoueur(1, PositionJ1),
   positionJoueur(2, PositionJ2),  
   Position2 is PositionJ1 + 1,
@@ -236,7 +209,7 @@ deplace(1,d) :-
   assert(positionJoueur(1, Position2)),
   deplace(1,d).
 
-deplace(2,d) :-
+deplace(2,d) :-               %saute par dessus le J1 si il est sur la droite
   positionJoueur(1, PositionJ1),
   positionJoueur(2, PositionJ2),  
   Position2 is PositionJ2 + 1,
@@ -245,24 +218,24 @@ deplace(2,d) :-
   assert(positionJoueur(2, Position2)),
   deplace(2,d).
 
-deplace(Joueur,d) :-
+deplace(Joueur,d) :-          %déplace le joueur à droite dans le cas idéal
   positionJoueur(Joueur, Position),
   Position2 is Position + 1,
   retractall(positionJoueur(Joueur,_)),
   assert(positionJoueur(Joueur, Position2)).
 
-deplace(Joueur,h) :-
+deplace(Joueur,h) :-          %vérifie si le joueur est en haut de la grille
   positionJoueur(Joueur, Position),
   Position =< 20,
   deplacer(Joueur, 2).
 
-deplace(Joueur,h) :-
+deplace(Joueur,h) :-          %vérifie si il y a un mur en haut
   positionJoueur(Joueur, Position),
   Position2 is Position -10,
   mur(Position2, h, _),
   deplacer(Joueur, 2).
 
-deplace(1,h) :-
+deplace(1,h) :-               %saute par dessus le J2 si il est en haut
   positionJoueur(1, PositionJ1),
   positionJoueur(2, PositionJ2),  
   Position2 is PositionJ1 - 10,
@@ -271,7 +244,7 @@ deplace(1,h) :-
   assert(positionJoueur(1, Position2)),
   deplace(1,h).
 
-deplace(2,h) :-
+deplace(2,h) :-               %saute par dessus le J1 si il est en haut
   positionJoueur(1, PositionJ1),
   positionJoueur(2, PositionJ2),  
   Position2 is PositionJ2 - 10,
@@ -280,23 +253,23 @@ deplace(2,h) :-
   assert(positionJoueur(2, Position2)),
   deplace(2,h).
 
-deplace(Joueur,h) :-
+deplace(Joueur,h) :-          %déplace le joueur vers le haute dans le cas idéal
   positionJoueur(Joueur, Position),
   Position2 is Position - 10,
   retractall(positionJoueur(Joueur,_)),
   assert(positionJoueur(Joueur, Position2)).
 
-deplace(Joueur,b) :-
+deplace(Joueur,b) :-          %vérifie si le joueur est en bas de la grille
   positionJoueur(Joueur, Position),
   Position >= 90,
   deplacer(Joueur, 2).
 
-deplace(Joueur,b) :-
+deplace(Joueur,b) :-          %vérifie si il y a un mur en bas
   positionJoueur(Joueur, Position),
   mur(Position, h, _),
   deplacer(Joueur, 2).
 
-deplace(1,b) :-
+deplace(1,b) :-               %saute par dessus le J2 si il est en bas
   positionJoueur(1, PositionJ1),
   positionJoueur(2, PositionJ2),  
   Position2 is PositionJ1 + 10,
@@ -305,7 +278,7 @@ deplace(1,b) :-
   assert(positionJoueur(1, Position2)),
   deplace(1,b).
 
-deplace(2,b) :-
+deplace(2,b) :-               %saute par dessus le J1 si il est en bas
   positionJoueur(1, PositionJ1),
   positionJoueur(2, PositionJ2),  
   Position2 is PositionJ2 + 10,
@@ -314,7 +287,7 @@ deplace(2,b) :-
   assert(positionJoueur(2, Position2)),
   deplace(2,b).
 
-deplace(Joueur,b) :-
+deplace(Joueur,b) :-          %déplace le joueur vers le bas dans le cas idéal
   positionJoueur(Joueur, Position),
   Position2 is Position + 10,
   retractall(positionJoueur(Joueur,_)),
@@ -325,14 +298,14 @@ deplace(Joueur,b) :-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                              GESTION DES MURS                                   %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-poserMur(1):- 
+poserMur(1):-                 %demande la position et le sens du mur à poser
   write('position ?'),
   read(Position),
   write('sens ?'),
   read(Sens),
   poseMur(Position,Sens).
 
-poserMur(2):- 
+poserMur(2):-                 %indique que la pose d'un mur n'est pas possible car il y a un mur ou il sort de la grille ou coupe un mur
   write('Impossible de poser un mur ici. Recommencez !'),nl,
   poserMur(1).
 
@@ -344,8 +317,12 @@ poseMur(Position,_) :-        %si on coupe un mur
   coupeMur(Position), 
   poserMur(2).
 
-poseMur(Position,_) :- 
+poseMur(Position,_) :-        %si le mur dépasse à droite
   Position >= 90, 
+  poserMur(2).
+
+poseMur(Position,_) :-        %si le mur dépasse à droite
+  Position =< 10, 
   poserMur(2).
 
 poseMur(Position,_) :- 
