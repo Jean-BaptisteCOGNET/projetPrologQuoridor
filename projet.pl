@@ -3,6 +3,7 @@ joueur/1,                     %determine la personne qui doit jouer
 compteurJ1/1, compteurJ2/1,   %Contient le NbMur restant par joueur
 compteurJoueur/2,
 positionJoueur/2,
+arc/3,
 compteurCase/1, compteurMur/1.
 
 
@@ -18,8 +19,11 @@ demarrer :-
 
 instructions :-
   nl,
-  write('Inserer ici les regle du jeu.'), nl, 
-  write('Inserer ici les regle du jeu.'), nl,nl,
+  write('Le jeu Quoridor est un jeu de strategie combinatoire, qui se joue sur un plateau de 81 cases carrees (9x9) et qui se joue ici a 2 joueurs.'), nl, 
+  write('Les joueurs sont representes par un pion J1 et un pion J2 sur le plateau et commencent chacun au centre de leur ligne de fond, en haut au milieu pour le joueur J1 (case 15) et en bas au milieu pour le joueur J2 (case 95).'), nl,
+  write('Chaque case du plateau est representee par un numero et constitue une position potentielle ou les pions des joueurs peuvent se trouver.'),nl,
+  write('Chaque joueur dispose de 10 murs chacun, pour entraver la progression du joueur adverse. Un mur peut etre place entre deux ensembles de deux cases. Chaque joueur a son tour choisit de deplacer son pion ou de poser un mur. Lorsqu il n a plus de murs, le joueur doit deplacer son pion.'),
+  nl,nl,
   write('Pour pouvoir jouer, entrez les differentes commandes suivantes en respectant la syntax Prolog (pas de majuscule et avec un point a la fin de la commande).'), nl,
   write('Les differentes commandes du jeu sont :'), nl,
   write('demarrer.                -- pour lancer le jeu.'), nl,
@@ -37,13 +41,54 @@ initialisation:-
   retractall(positionJoueur(_,_)),
   retractall(compteurCase(_)),
   retractall(compteurMur(_)),
-  assert(compteurJoueur(1,1)),
-  assert(compteurJoueur(2,1)),
+  retractall(arc(_,_,_,_)),
+  assert(compteurJoueur(1,10)),
+  assert(compteurJoueur(2,10)),
   assert(joueur(1)),
   assert(positionJoueur(1,85)),
-  assert(positionJoueur(2,95)),
+  assert(positionJoueur(2,45)),
   assert(compteurCase(11)),
-  assert(compteurMur(11)).
+  assert(compteurMur(11)),
+  creerArc(11).
+
+creerArc(99).
+
+creerArc(X):-
+  X < 90,
+  XA is X+1,
+  X2 is XA mod 10,
+  X2 =:= 0,
+  X3 is X +10,
+  assert(arc(X, X3,1)),
+  assert(arc(X3, X,1)),
+  X4 is X3 - 8,
+  creerArc(X4).
+
+
+creerArc(X):-
+  X < 90,
+  X3 is X +1,
+  assert(arc(X, X3,1)),
+  assert(arc(X3, X,1)),
+  X4 is X +10,
+  assert(arc(X, X4,1)),
+  assert(arc(X4, X,1)),
+  creerArc(X3).
+
+creerArc(X):-
+  XA is X+1,
+  X2 is XA mod 10,
+  X2 =:= 0.
+
+creerArc(X):-
+  X < 100,
+  X3 is X +1,
+  assert(arc(X, X3,1)),
+  assert(arc(X3, X,1)),
+  creerArc(X3).
+
+
+
 
 jouer :-
   gagne(1).
@@ -53,7 +98,7 @@ jouer :-          %vérifie si le J1 à gagné
 
 jouer :-
   joueur(X),X=1,
-  write('Joueur 1'), nl,
+  ansi_format([bold,fg(green)], 'Joueur 1', []), nl,
   write('Que voulez vous faire ? Tapez m. pour poser un mur ou d. pour vous deplacer'),nl,
   read(Action),
   retractall(joueur(_)),
@@ -63,7 +108,7 @@ jouer :-
 
 jouer :-
   joueur(X),X=2,
-  write('Joueur 2'), nl,
+  ansi_format([bold,fg(cyan)], 'Joueur 2', []), nl,
   write('Que voulez vous faire ? Tapez m. pour poser un mur ou d. pour vous deplacer'),nl,
   read(Action),
   retractall(joueur(_)),
@@ -73,50 +118,46 @@ jouer :-
 
 tourJoueur(1,m) :-                          %vérifie si il reste des murs à poser au J1
   compteurJoueur(1,NbMurRestant),
-  NbMurRestant==0,
+  NbMurRestant < 1,
   
-  write('plus de mur'),
-  deplacer.
+  write('plus de mur,vous ne pouvez que vous deplacer'), nl,
+  deplacer(1,1).
 
 tourJoueur(1,m) :- 
   poserMur(1), 
-  compteur(compteurJoueur).
+  compteur(1,compteurJoueur).
 
 tourJoueur(1,d) :- 
   deplacer(1,1).
 
 tourJoueur(2,m) :-                          %vérifie si il reste des murs à poser au J2
   compteurJoueur(2,NbMurRestant),
-  NbMurRestant==0,
-  write('plus de mur'),
-  deplacer.
+  NbMurRestant < 1,
+  write('plus de mur, vous ne pouvez que vous deplacer'), nl,
+  deplacer(2,1).
 
 tourJoueur(2,m) :- 
   poserMur(1), 
-  compteur(compteurJoueur).
+  compteur(2, compteurJoueur).
 
 tourJoueur(2,d) :- 
  deplacer(2, 1).
 
 gagne(1):-          %vérifie si le J1 à gagné
   positionJoueur(1, Position),
-  Position =:= 95, 
-  write('Le joueur 1 gagne !').
+  Position > 90, 
+  ansi_format([bold,fg(green)], 'Le joueur 1 gagne !', []).
 
 gagne(2):-          %vérifie si le J2 à gagné
   positionJoueur(2, Position),
-  Position =:= 15, 
-  write('Le joueur 2 gagne !').
+  Position < 20, 
+   ansi_format([bold,fg(cyan)], 'Le joueur 2 gagne !', []).
 
-%création sur une grille de 5x5 pour tester. Sera fait sur 9x9 plus tard
-grilleJeu(
-    [11,12,13,14,15,
-    21,22,23,24,25,
-    31,32,33,34,35,
-    41,42,43,44,45,
-    51,52,53,54,55]).
 
 afficheGrilleJeu :- grilleJeu(G), printGrid(G). %affichage de la grille de jeu
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                            GESTION DES DEPLACEMENTS                             %
@@ -125,6 +166,13 @@ deplacer(Joueur, 1) :-
   write('Direction ? (g. pour gauche, d. pour droite, h. pour haut, b. pour bas)'),nl,
   read(Direction),
   deplace(Joueur, Direction).
+
+deplacer(Joueur, 2) :- 
+  positionJoueur(1, PositionJ1),
+  positionJoueur(2, PositionJ2),
+  PositionJ1 == PositionJ2,
+  write('Vous etes sur l autre joueur !'),nl,
+  deplacer(Joueur, 1).
 
 deplacer(Joueur, 2) :- 
   write('Deplacement impossible, recommencez !'),nl,
@@ -142,6 +190,24 @@ deplace(Joueur,g) :-
   Position2 is Position -1,
   mur(Position2, v, _),
   deplacer(Joueur, 2).
+
+deplace(1,g) :-
+  positionJoueur(1, PositionJ1),
+  positionJoueur(2, PositionJ2),  
+  Position2 is PositionJ1 - 1,
+  Position2 == PositionJ2,
+  retractall(positionJoueur(1,_)),
+  assert(positionJoueur(1, Position2)),
+  deplace(1,g).
+
+deplace(2,g) :-
+  positionJoueur(1, PositionJ1),
+  positionJoueur(2, PositionJ2),  
+  Position2 is PositionJ2 - 1,
+  Position2 == PositionJ1,
+  retractall(positionJoueur(2,_)),
+  assert(positionJoueur(2, Position2)),
+  deplace(2,g).
 
 deplace(Joueur,g) :-
   positionJoueur(Joueur, Position),
@@ -161,6 +227,24 @@ deplace(Joueur,d) :-
   mur(Position, v, _),
   deplacer(Joueur, 2).
 
+deplace(1,d) :-
+  positionJoueur(1, PositionJ1),
+  positionJoueur(2, PositionJ2),  
+  Position2 is PositionJ1 + 1,
+  Position2 == PositionJ2,
+  retractall(positionJoueur(1,_)),
+  assert(positionJoueur(1, Position2)),
+  deplace(1,d).
+
+deplace(2,d) :-
+  positionJoueur(1, PositionJ1),
+  positionJoueur(2, PositionJ2),  
+  Position2 is PositionJ2 + 1,
+  Position2 == PositionJ1,
+  retractall(positionJoueur(2,_)),
+  assert(positionJoueur(2, Position2)),
+  deplace(2,d).
+
 deplace(Joueur,d) :-
   positionJoueur(Joueur, Position),
   Position2 is Position + 1,
@@ -178,6 +262,24 @@ deplace(Joueur,h) :-
   mur(Position2, h, _),
   deplacer(Joueur, 2).
 
+deplace(1,h) :-
+  positionJoueur(1, PositionJ1),
+  positionJoueur(2, PositionJ2),  
+  Position2 is PositionJ1 - 10,
+  Position2 == PositionJ2,
+  retractall(positionJoueur(1,_)),
+  assert(positionJoueur(1, Position2)),
+  deplace(1,h).
+
+deplace(2,h) :-
+  positionJoueur(1, PositionJ1),
+  positionJoueur(2, PositionJ2),  
+  Position2 is PositionJ2 - 10,
+  Position2 == PositionJ1,
+  retractall(positionJoueur(2,_)),
+  assert(positionJoueur(2, Position2)),
+  deplace(2,h).
+
 deplace(Joueur,h) :-
   positionJoueur(Joueur, Position),
   Position2 is Position - 10,
@@ -193,12 +295,31 @@ deplace(Joueur,b) :-
   positionJoueur(Joueur, Position),
   mur(Position, h, _),
   deplacer(Joueur, 2).
-  
+
+deplace(1,b) :-
+  positionJoueur(1, PositionJ1),
+  positionJoueur(2, PositionJ2),  
+  Position2 is PositionJ1 + 10,
+  Position2 == PositionJ2,
+  retractall(positionJoueur(1,_)),
+  assert(positionJoueur(1, Position2)),
+  deplace(1,b).
+
+deplace(2,b) :-
+  positionJoueur(1, PositionJ1),
+  positionJoueur(2, PositionJ2),  
+  Position2 is PositionJ2 + 10,
+  Position2 == PositionJ1,
+  retractall(positionJoueur(2,_)),
+  assert(positionJoueur(2, Position2)),
+  deplace(2,b).
+
 deplace(Joueur,b) :-
   positionJoueur(Joueur, Position),
   Position2 is Position + 10,
   retractall(positionJoueur(Joueur,_)),
   assert(positionJoueur(Joueur, Position2)).
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -219,11 +340,7 @@ poseMur(Position,Sens) :-     %si il y a déjà un mur de placé ici
   mur(Position,Sens,_), 
   poserMur(2).
 
-poseMur(Position,h) :-        %si on coupe un mur
-  coupeMur(Position), 
-  poserMur(2).
-
-poseMur(Position,v) :- 
+poseMur(Position,_) :-        %si on coupe un mur
   coupeMur(Position), 
   poserMur(2).
 
@@ -237,44 +354,134 @@ poseMur(Position,_) :-
   Position3 =:= 0,
   poserMur(2).
 
+
 poseMur(Position,v) :- 
-  %\+Position >= 90,
-  %\+mur(Position,v,_),                                    %on vérifie qu'il n'y ait pas déjà un mur
-  %\+coupeMur(Position, h),                                %on vérifie qu'on ne coupe pas un mur 
-  Position2 is Position +10, \+mur(Position2,v,_),        %on vérifie qu'il n'y ait pas de mur en dessous  
+  Position2 is Position +10, \+mur(Position2,v,_),          
   assert(mur(Position, v, debut)),
-  Position2 is Position +10,
-  assert(mur(Position2, v, fin)).
+  assert(mur(Position2, v, fin)),
+  Position3 is Position +1,
+  retractall(arc(Position,Position3,_)),
+  retractall(arc(Position3,Position,_)),
+  Position4 is Position2 +1,
+  retractall(arc(Position2, Position4,_)),
+  retractall(arc(Position4, Position2,_)),
+  positionJoueur(1, PositionJ1),
+  positionJoueur(2, PositionJ2),
+  poseMurPossibleJ1(PositionJ1),
+  poseMurPossibleJ2(PositionJ2).
+
+poseMur(Position,v) :-
+  Position2 is Position +10,          
+  retractall(mur(Position, v, _)),
+  retractall(mur(Position2, v, _)),
+  Position3 is Position +1,
+  assert(arc(Position,Position3,1)),
+  assert(arc(Position3,Position,1)),
+  Position4 is Position2 +1,
+  assert(arc(Position2, Position4,1)),
+  assert(arc(Position4, Position2,1)),
+  poserMur(2).
 
 poseMur(Position,h) :- 
-  %\+Position >= 90,
-  %\+mur(Position,h,_),                                    %on vérifie qu'il n'y ait pas déjà un mur
-  %\+coupeMur(Position, v),                                %on vérifie qu'on ne coupe pas un mur    
-  Position2 is Position +1, \+mur(Position2,h,_),         %on vérifie qu'il n'y ait pas de mur à droite  
+  Position2 is Position +1, \+mur(Position2,h,_),           
   assert(mur(Position, h, debut)),
-  Position2 is Position +1,
-  assert(mur(Position2, h, fin)).
+  assert(mur(Position2, h, fin)),
+  Position3 is Position +10,
+  retractall(arc(Position,Position3,_)),
+  retractall(arc(Position3,Position,_)),
+  Position4 is Position2 +10,
+  retractall(arc(Position2, Position4,_)),
+  retractall(arc(Position4, Position2,_)),
+  positionJoueur(1, PositionJ1),
+  positionJoueur(2, PositionJ2),
+  poseMurPossibleJ1(PositionJ1),
+  poseMurPossibleJ2(PositionJ2).
 
-coupeMur(Position) :-                                      %on vérifie qu'on ne coupe pas un mur  
+poseMur(Position,h) :- 
+  Position2 is Position +1,           
+  retractall(mur(Position, h, _)),
+  retractall(mur(Position2, h, _)),
+  Position3 is Position +10,
+  assert(arc(Position,Position3,1)),
+  assert(arc(Position3,Position,1)),
+  Position4 is Position2 +10,
+  assert(arc(Position2, Position4,1)),
+  assert(arc(Position4, Position2,1)), 
+  poserMur(2).
+
+coupeMur(Position) :-                                          %on vérifie qu'on ne coupe pas un mur  
   mur(Position, _, debut).
 
-compteur(compteurJoueur) :-                                      %compteur de mur restant pour le joueur 1
+poseMurPossibleJ1(PositionJ1):- 
+  dijkstra(PositionJ1,91, _, _).
+
+poseMurPossibleJ1(PositionJ1):- 
+  dijkstra(PositionJ1,92, _, _).
+
+poseMurPossibleJ1(PositionJ1):- 
+  dijkstra(PositionJ1,93, _, _).
+
+poseMurPossibleJ1(PositionJ1):- 
+  dijkstra(PositionJ1,94, _, _).
+
+poseMurPossibleJ1(PositionJ1):- 
+  dijkstra(PositionJ1,95, _, _).
+
+poseMurPossibleJ1(PositionJ1):- 
+  dijkstra(PositionJ1,96, _, _).
+
+poseMurPossibleJ1(PositionJ1):- 
+  dijkstra(PositionJ1,97, _, _).
+
+poseMurPossibleJ1(PositionJ1):- 
+  dijkstra(PositionJ1,98, _, _).
+
+poseMurPossibleJ1(PositionJ1):- 
+  dijkstra(PositionJ1,99, _, _).
+
+poseMurPossibleJ2(PositionJ2):- 
+  dijkstra(PositionJ2,11, _, _).
+
+poseMurPossibleJ2(PositionJ2):- 
+  dijkstra(PositionJ2,12, _, _).
+
+poseMurPossibleJ2(PositionJ2):- 
+  dijkstra(PositionJ2,13, _, _).
+
+poseMurPossibleJ2(PositionJ2):- 
+  dijkstra(PositionJ2,14, _, _).
+
+poseMurPossibleJ2(PositionJ2):- 
+  dijkstra(PositionJ2,15, _, _).
+
+poseMurPossibleJ2(PositionJ2):- 
+  dijkstra(PositionJ2,16, _, _).
+
+poseMurPossibleJ2(PositionJ2):- 
+  dijkstra(PositionJ2,17, _, _).
+
+poseMurPossibleJ2(PositionJ2):- 
+  dijkstra(PositionJ2,18, _, _).
+
+poseMurPossibleJ2(PositionJ2):- 
+  dijkstra(PositionJ2,19, _, _).
+
+
+compteur(1, compteurJoueur) :-                                      %compteur de mur restant pour le joueur 1
   compteurJoueur(1,NbMurRestant),
   retractall(compteurJoueur(1,_)),
   NbMurRestant2 is NbMurRestant-1,
-  assert(compteurJoeur(1,NbMurRestant2)),
-  write('Joueur 1, il vous reste '),
-  write(NbMurRestant2),
-  write(' mur(s)').
+  assert(compteurJoueur(1,NbMurRestant2)),
+  ansi_format([bold,fg(green)], 'Le joueur 1, il vous reste ~w mur(s)', [NbMurRestant2]).
 
-compteur(compteurJoueur) :-                                      %compteur de mur restant pour le joueur 1
+compteur(2, compteurJoueur) :-                                      %compteur de mur restant pour le joueur 1
   compteurJoueur(2,NbMurRestant),
-  retractall(compteurJoueur(1,_)),
+  retractall(compteurJoueur(2,_)),
   NbMurRestant2 is NbMurRestant-1,
-  assert(compteurJoeur(2,NbMurRestant2)),
-  write('Joueur 2, il vous reste '),
-  write(NbMurRestant2),
-  write(' mur(s)').
+  assert(compteurJoueur(2,NbMurRestant2)),
+  ansi_format([bold,fg(cyan)], 'Le joueur 2, il vous reste ~w mur(s)', [NbMurRestant2]).
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                           GESTION DE L'AFFICHAGE                                %
@@ -301,8 +508,8 @@ afficheCase :-
 
 afficheCase :-
   compteurCase(X),
-  positionJoueur(1, X),
-  write("J1"),
+  positionJoueur(1, X),  
+  ansi_format([bold,fg(green)], 'J1', []),
   afficheMurV,
   X2 is X +1,
   retractall(compteurCase(_)),
@@ -312,7 +519,7 @@ afficheCase :-
 afficheCase :-
   compteurCase(X),
   positionJoueur(2, X),
-  write("J2"),
+  ansi_format([bold,fg(cyan)], 'J2', []),
   afficheMurV,
   X2 is X +1,
   retractall(compteurCase(_)),
@@ -361,3 +568,78 @@ afficheMur :-
   assert(compteurMur(X2)),
   afficheMur.
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                  Dijkstra                                       %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Dijkstra
+%   + Start        : Point de départ
+%   + Finish       : Point de d'arrivée
+%   - ShortestPath : Chemin le plus court
+%   - Len          : Longueur de ce chemin
+%
+
+dijkstra(Start, Finish, ShortestPath, Len) :-
+  dijk( [0-[Start]], Finish, RShort, Len),
+  reverse(RShort, ShortestPath).
+
+
+% Le dernier point visité est le point d'arrivée => on s'arrête
+%
+
+dijk( [ Len-[Fin|RPath] |_], Fin, [Fin|RPath], Len) :- !.
+
+
+dijk( Visited, Fin, RShortestPath, Len) :-
+  % Recherche du meilleur candidat (prochain point à ajouter au graphe)
+  %   et appel récursif au prédicat
+  %
+
+  bestCandidate(Visited, BestCandidate), 
+  dijk( [BestCandidate|Visited], Fin, RShortestPath, Len).
+
+%
+% Recherche toutes les arrêtes pour lesquelles on a:
+%  - un point dans le graphe (visité)
+%  - un point hors du graphe (candidat)
+%
+% Retourne le point qui minimise la distance par rapport à l'origine
+%
+
+bestCandidate(Paths, BestCandidate) :-
+
+  % à partir d'un point P1 :
+  
+  findall(
+     NP            % on fait la liste de tous les points P2 tels que:
+  ,
+    (
+      member( Len-[P1|Path], Paths),  % - le point P2 a déjà été visité
+      arc(P1,P2,Dist),                % - il existe un arc allant de P1 à P2, de distance Dist
+      \+isVisited(Paths, P2),         % - le point P2 n'a pas encore été visité
+
+      NLen is Len+Dist,               % on calcule la distance entre l'origine et le point P2
+
+      NP=NLen-[P2,P1|Path]            % on met chaque élément de la liste sous la forme: Distance-Chemin
+                                      % pour pouvoir les trier avec le prédicat keysort/2
+    )
+  ,
+    Candidates
+  ),
+
+  % On trie et on retient le chemin le plus court
+  minimum(Candidates, BestCandidate).
+
+%
+% Sort le meilleur candidat parmi une liste de candidats
+% (= celui de chemin le moins long)
+%
+
+minimum(Candidates, BestCandidate) :-
+  keysort(Candidates, [BestCandidate|_]).
+%
+% Teste si un point P a déjà été visité
+%
+isVisited(Paths, P) :-
+  memberchk(_-[P|_], Paths).
