@@ -2,7 +2,7 @@
 
 ###  Informations générales 
  
-Dans le cadre du module Intelligence Artificielle Symbolique, enseigné à l'ENSC (Ecole Nationale Supérieure de Cognitique), il a été demandé la création du jeu Quoridor en prolog.
+Dans le cadre du module Intelligence Artificielle Symbolique, enseigné à l'ENSC (Ecole Nationale Supérieure de Cognitique), il a été demandé la création du jeu Quoridor en prolog. 
 
 Le jeu Quoridor est un jeu de stratégie combinatoire, qui se joue sur un plateau de 81 cases carrées (9x9) et qui se joue ici à 2 joueurs. 
 Les joueurs sont représentés par un pion “J1” et pion “J2” sur le plateau et commencent chacun au centre de leur ligne de fond, en haut au milieu pour le joueur J1 (case 15) et en bas au milieu pour le joueur J2 (case 95). 
