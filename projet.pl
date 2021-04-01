@@ -476,7 +476,7 @@ afficheGrille :-              %Si compteurCase >=99 (a terminé d'afficher la gr
 afficheGrille :-              %affiche la grille tant que le compteurCase < 99
   afficheCase.
 
-afficheCase :-
+afficheCase :-                %à la fin de la ligne appel affichage de la ligne destiné au mur  
   compteurCase(X), X2 is X mod 10, X2=:=0,
   X3 is X +1,
   retractall(compteurCase(_)),
@@ -484,17 +484,17 @@ afficheCase :-
   nl,
   afficheMur.
 
-afficheCase :-
+afficheCase :-                %affiche J1 si J1 est sur la case à afficher
   compteurCase(X),
   positionJoueur(1, X),  
   ansi_format([bold,fg(green)], 'J1', []),
-  afficheMurV,
+  afficheMurV,                %appel à afficheMurV pour afficher un mur si besoin
   X2 is X +1,
   retractall(compteurCase(_)),
   assert(compteurCase(X2)),
   afficheCase.
 
-afficheCase :-
+afficheCase :-                %affiche J2 si J2 est sur la case à afficher
   compteurCase(X),
   positionJoueur(2, X),
   ansi_format([bold,fg(cyan)], 'J2', []),
@@ -504,7 +504,7 @@ afficheCase :-
   assert(compteurCase(X2)),
   afficheCase.
 
-afficheCase :-
+afficheCase :-                %affiche le numéro de la case
   compteurCase(X),
   write(X),
   afficheMurV,
@@ -513,15 +513,15 @@ afficheCase :-
   assert(compteurCase(X2)),
   afficheCase.
 
-afficheMurV :-
+afficheMurV :-                %affiche un mur vertical entre les cases si besoin
   compteurCase(X),
   mur(X,v,_),
   write("|").
 
-afficheMurV :-
+afficheMurV :-                %affiche un blanc si il n'y a pas de mur vertical
   write(" ").
 
-afficheMur :-
+afficheMur :-                 %fin de la ligne, passage à la ligne suivante
   compteurMur(X), X2 is X mod 10, X2=:=0,
   X3 is X +1,
   retractall(compteurMur(_)),
@@ -529,7 +529,7 @@ afficheMur :-
   nl,
   afficheGrille.
 
-afficheMur :-
+afficheMur :-                 %affiche un mur horizontal entre les cases si besoin
   compteurMur(X),
   mur(X, h, _),
   write("---"),
@@ -538,7 +538,7 @@ afficheMur :-
   assert(compteurMur(X2)),
   afficheMur.
 
-afficheMur :-
+afficheMur :-                 %affiche un blanc si il n'y a pas de mur horizontal
   compteurMur(X),
   write("   "),
   X2 is X +1,
