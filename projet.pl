@@ -13,18 +13,23 @@ compteurMur/1.                %Permet d'afficher les murs dans la console
 demarrer :-  
     nl,
     write('Bienvenue dans Quoridor ! '), nl,
+    regle,
     initialisation,
     instructions,
+    
     jouer.                    %appel jouer
 
-instructions :-
+regle :-
   nl,
   write('Le jeu Quoridor est un jeu de strategie combinatoire, qui se joue sur un plateau de 81 cases carrees (9x9) et qui se joue ici a 2 joueurs.'), nl, nl,
   write('Les joueurs sont representes par un pion J1 et un pion J2 sur le plateau et commencent chacun au centre de leur ligne de fond, en haut au milieu pour le joueur J1 (case 15) et en bas au milieu pour le joueur J2 (case 95).'), nl, nl,
   write('Chaque case du plateau est representee par un numero et constitue une position potentielle ou les pions des joueurs peuvent se trouver.'),nl, nl,
-  write('Chaque joueur dispose de 10 murs chacun, pour entraver la progression du joueur adverse. Un mur peut etre place entre deux ensembles de deux cases. Chaque joueur a son tour choisit de deplacer son pion ou de poser un mur. Lorsqu il n a plus de murs, le joueur doit deplacer son pion.'),
-  nl,nl, nl,
-  write('Pour pouvoir jouer, entrez les differentes commandes suivantes en respectant la syntax Prolog (pas de majuscule et avec un point a la fin de la commande).'), nl,
+  write('Chaque joueur dispose d un certains nombre de murs chacun, pour entraver la progression du joueur adverse. Un mur peut etre place entre deux ensembles de deux cases. Deux murs ne peuvent ni se croiser, ni etre poses au meme endroit, ni etre poses sur les bords du plateau de jeu.'),nl, nl,
+  write('Chaque joueur a son tour choisit de deplacer son pion ou de poser un mur. Lorsqu il n a plus de murs, le joueur doit deplacer son pion.'),nl,nl,
+  write('Le but du jeu est d arriver le premier sur la ligne de fond adverse. '), nl,nl.
+
+instructions :-
+  nl, nl, write('Pour pouvoir jouer, entrez les differentes commandes suivantes en respectant la syntax Prolog (pas de majuscule et avec un point a la fin de la commande).'), nl,
   write('Les differentes commandes du jeu sont :'), nl,
   write('demarrer.                -- pour lancer le jeu.'), nl,
   write('jouer.                   -- pour jouer.'), nl,
